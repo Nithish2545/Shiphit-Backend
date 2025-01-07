@@ -28,51 +28,64 @@ app.get("/", (req, res) => {
 });
 
 app.post("/sendNotification", async (req, res) => {
-  // Access token generation
-  const serviceAccountBase64 = process.env.SERVICE_ACCOUNT_BASE64;
-  const serviceAccount = JSON.parse(
-    Buffer.from(serviceAccountBase64, "base64").toString("utf-8")
-  );
+  try {
+    // Access token generation
+    const serviceAccountBase64 = process.env.SERVICE_ACCOUNT_BASE64;
+    const serviceAccount = JSON.parse(
+      Buffer.from(serviceAccountBase64, "base64").toString("utf-8")
+    );
 
-  const jwtClient = new google.auth.JWT(
-    serviceAccount.client_email,
-    null,
-    serviceAccount.private_key,
-    ["https://www.googleapis.com/auth/firebase.messaging"]
-  );
-  await jwtClient.authorize();
-  const { token } = await jwtClient.getAccessToken();
-  const accessToken = token;
-  const { fcm_token, title, body, image, link } = req.body;
-  // Access token generation
-  await axios.post(
-    "https://fcm.googleapis.com/v1/projects/shiphitmobileapppickup-4d0a1/messages:send",
-    {
-      message: {
-        token: fcm_token,
-        notification: {
-          title: title,
-          body: body,
-          image: image, // Add a proper logo URL here
-        },
-        webpush: {
-          fcm_options: {
-            link: link,
+    const jwtClient = new google.auth.JWT(
+      serviceAccount.client_email,
+      null,
+      serviceAccount.private_key,
+      ["https://www.googleapis.com/auth/firebase.messaging"]
+    );
+    await jwtClient.authorize();
+    const { token } = await jwtClient.getAccessToken();
+    const accessToken = token;
+    const { fcm_token, title, body, image, link } = req.body;
+
+    // Send the push notification
+    await axios.post(
+      "https://fcm.googleapis.com/v1/projects/shiphitmobileapppickup-4d0a1/messages:send",
+      {
+        message: {
+          token: fcm_token,
+          notification: {
+            title: title,
+            body: body,
+            image: image, // Add a proper logo URL here
           },
-          headers: {
-            Urgency: "high",
+          webpush: {
+            fcm_options: {
+              link: link,
+            },
+            headers: {
+              Urgency: "high",
+            },
           },
         },
       },
-    },
-    {
-      headers: {
-        "content-type": "application/json",
-        Authorization: `Bearer ${accessToken}`, // Use the dynamically retrieved access token
-      },
-    }
-  );
-  res.send("successfully send");
+      {
+        headers: {
+          "content-type": "application/json",
+          Authorization: `Bearer ${accessToken}`, // Use the dynamically retrieved access token
+        },
+      }
+    );
+
+    // Respond with success message
+    res.status(200).send("Successfully sent the notification");
+  } catch (error) {
+    console.error("Error sending notification:", error);
+
+    // Send an error response with a detailed message
+    res.status(500).json({
+      message: "Error sending notification",
+      error: error.message || "Unknown error",
+    });
+  }
 });
 
 // Start the server
