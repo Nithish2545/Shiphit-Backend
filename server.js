@@ -23,6 +23,10 @@ const __dirname = path.dirname(__filename);
 // Path to the service account key JSON
 const serviceAccountPath = path.join(__dirname, "serviceAccount.json");
 
+app.get("/", (req, res) => {
+  res.send("app successfully running!");
+});
+
 app.post("/sendNotification", async (req, res) => {
   // Access token generation
   const serviceAccountBase64 = process.env.SERVICE_ACCOUNT_BASE64;
