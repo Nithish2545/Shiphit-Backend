@@ -13,7 +13,7 @@ const port = 3001;
 app.use(express.json());
 app.use(
   cors({
-    origin: "https://enquiry-app-a4bfc.web.app", // Allow your frontend origin
+    origin: "http://localhost:5173", // Allow your frontend origin
   })
 );
 // Get the current directory from import.meta.url
