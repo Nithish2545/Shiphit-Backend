@@ -47,7 +47,7 @@ fs.readFile(serviceAccountPath, "utf8", (err, data) => {
   });
 });
 app.get("/", (req, res) => {
-  res.send("app successfully running!");
+  res.send("app successfully running! Thank you");
 });
 
 app.post("/sendNotification", async (req, res) => {
